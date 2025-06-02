@@ -167,55 +167,78 @@
   </footer>
 
   <script>
-    let keranjang = [];
-    let total = 0;
+  let keranjang = [];
+  let total = 0;
 
-    function tambahKeKeranjang(nama, harga) {
-      keranjang.push({ nama, harga });
-      total += harga;
-      updateKeranjang();
+  function tambahKeKeranjang(nama, harga) {
+    const index = keranjang.findIndex(item => item.nama === nama);
+    if (index !== -1) {
+      keranjang[index].jumlah++;
+      keranjang[index].total += harga;
+    } else {
+      keranjang.push({ nama, harga, jumlah: 1, total: harga });
     }
+    total += harga;
+    updateKeranjang();
+  }
 
-    function hapusDariKeranjang(index) {
+  function kurangiJumlah(index) {
+    if (keranjang[index].jumlah > 1) {
+      keranjang[index].jumlah--;
+      keranjang[index].total -= keranjang[index].harga;
       total -= keranjang[index].harga;
-      keranjang.splice(index, 1);
-      updateKeranjang();
+    } else {
+      hapusDariKeranjang(index);
+      return;
     }
+    updateKeranjang();
+  }
 
-    function updateKeranjang() {
-      const daftar = document.getElementById("daftarKeranjang");
-      daftar.innerHTML = "";
-      let ringkasan = "";
+  function hapusDariKeranjang(index) {
+    total -= keranjang[index].total;
+    keranjang.splice(index, 1);
+    updateKeranjang();
+  }
 
-      keranjang.forEach((item, index) => {
-        let li = document.createElement("li");
-        li.style.display = "flex";
-        li.style.justifyContent = "space-between";
-        li.style.alignItems = "center";
+  function updateKeranjang() {
+    const daftar = document.getElementById("daftarKeranjang");
+    daftar.innerHTML = "";
+    let ringkasan = "";
 
-        li.innerHTML = `
-          <span>${item.nama} - Rp ${item.harga.toLocaleString()}</span>
-          <button onclick="hapusDariKeranjang(${index})" style="border: none; background: none; color: #666; cursor: pointer; font-size: 14px;">✖</button>
-        `;
-        daftar.appendChild(li);
+    keranjang.forEach((item, index) => {
+      const li = document.createElement("li");
+      li.style.display = "flex";
+      li.style.justifyContent = "space-between";
+      li.style.alignItems = "center";
+      li.style.marginBottom = "5px";
 
-        ringkasan += `${item.nama} - Rp ${item.harga.toLocaleString()}\n`;
-      });
+      li.innerHTML = `
+        <span>${item.nama} x${item.jumlah} - Rp ${item.total.toLocaleString()}</span>
+        <div>
+          <button onclick="kurangiJumlah(${index})" style="margin-right:5px;">➖</button>
+          <button onclick="hapusDariKeranjang(${index})" style="border:none; background:none; color:#666; cursor:pointer; font-size:14px;">✖</button>
+        </div>
+      `;
+      daftar.appendChild(li);
 
-      document.getElementById("totalHarga").textContent = total.toLocaleString();
-      document.getElementById("pesananInput").value = ringkasan + `Total: Rp ${total.toLocaleString()}`;
-    }
+      ringkasan += `${item.nama} x${item.jumlah} - Rp ${item.total.toLocaleString()}\n`;
+    });
 
-    document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.btn').forEach(button => {
-        button.addEventListener('click', () => {
-          const nama = button.getAttribute('data-nama');
-          const harga = parseInt(button.getAttribute('data-harga'), 10);
-          tambahKeKeranjang(nama, harga);
-        });
+    document.getElementById("totalHarga").textContent = total.toLocaleString();
+    document.getElementById("pesananInput").value = ringkasan + `Total: Rp ${total.toLocaleString()}`;
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.btn').forEach(button => {
+      button.addEventListener('click', () => {
+        const nama = button.getAttribute('data-nama');
+        const harga = parseInt(button.getAttribute('data-harga'), 10);
+        tambahKeKeranjang(nama, harga);
       });
     });
-  </script>
+  });
+</script>
+
 
 </body>
 </html>
